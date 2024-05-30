@@ -28,18 +28,13 @@ class GildedRose
 end
 
 class ItemUpdater 
-  def self.sell_in_down(item, index = 1)
+  def self.update_sell_in(item, index = 1)
     item.sell_in -= index
   end
 
-  def self.quality_up(item, index = 1)
+  def self.update_quality(item, index = 1)
     index *= 2 if item.sell_in < 0
     item.quality += index
-  end
-
-  def self.quality_down(item, index = 1)
-    index *= 2 if item.sell_in < 0
-    item.quality -= index
   end
 
   def self.check_limit(item)
@@ -50,8 +45,8 @@ end
 
 class AgedItem < ItemUpdater
   def self.call(item)
-    sell_in_down(item)
-    quality_up(item)
+    update_sell_in(item)
+    update_quality(item)
     check_limit(item)
   end
 end
@@ -62,27 +57,28 @@ end
 
 class BackstageItem < ItemUpdater
   def self.call(item)
-    sell_in_down(item)
-    quality_up(item) if item.sell_in > 11
-    quality_up(item, 2) if item.sell_in < 11
-    quality_up(item, 3) if item.sell_in < 6
-    item.quality = 0 if item.sell_in < 0
+    update_sell_in(item)
+    if item.sell_in < 0
+      item.quality = 0
+    else
+      update_quality(item, item.sell_in < 5 ? 3 : (item.sell_in < 10 ? 2 : 1))
+    end
     check_limit(item)
   end
 end
 
 class ConjuredItem < ItemUpdater
   def self.call(item)
-    sell_in_down(item)
-    quality_down(item, 2)
+    update_sell_in(item)
+    update_quality(item, -2)
     check_limit(item)
   end
 end
 
 class StandartItem < ItemUpdater
   def self.call(item)
-    sell_in_down(item, index = 1)
-    quality_down(item, index = 1)
+    update_sell_in(item)
+    update_quality(item, -1)
     check_limit(item)
   end
 end
